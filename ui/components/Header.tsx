@@ -52,12 +52,14 @@ function Header({ result, requestPayload }: HeaderProps) {
 
   return (
     <header className="border-b bg-gradient-to-r from-card via-card to-primary/5">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+      <div className="container mx-auto px-4 py-5 flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
             chances-of
           </h1>
-          <p className="text-sm text-muted-foreground font-medium">Probability Explorer</p>
+          <p className="text-sm text-muted-foreground">
+            Explore uncertainty through simulation
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
