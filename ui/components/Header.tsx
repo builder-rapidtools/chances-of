@@ -72,12 +72,13 @@ function Header({ result, requestPayload }: HeaderProps) {
                 size="icon"
                 onClick={copyCLICommand}
                 disabled={!requestPayload}
+                aria-label="Terminal"
               >
                 <Terminal className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Copy CLI command</p>
+            <TooltipContent side="bottom" align="center" className="text-xs">
+              Terminal
             </TooltipContent>
           </Tooltip>
 
@@ -88,18 +89,19 @@ function Header({ result, requestPayload }: HeaderProps) {
                 size="icon"
                 onClick={copyJSON}
                 disabled={!result}
+                aria-label="Copy"
               >
                 <Copy className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Copy results JSON</p>
+            <TooltipContent side="bottom" align="center" className="text-xs">
+              Copy
             </TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" onClick={toggleTheme}>
+              <Button variant="outline" size="icon" onClick={toggleTheme} aria-label="Theme">
                 {theme === 'dark' ? (
                   <Sun className="h-4 w-4" />
                 ) : (
@@ -107,8 +109,8 @@ function Header({ result, requestPayload }: HeaderProps) {
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Toggle theme</p>
+            <TooltipContent side="bottom" align="center" className="text-xs">
+              Theme
             </TooltipContent>
           </Tooltip>
         </div>

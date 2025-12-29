@@ -94,7 +94,7 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="chances-of-theme">
-      <TooltipProvider>
+      <TooltipProvider delayDuration={200}>
         <div className="min-h-screen bg-background">
           <div className="gradient-hero">
             <Header result={result} requestPayload={requestPayload} />
