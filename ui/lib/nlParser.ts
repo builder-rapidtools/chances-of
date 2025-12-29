@@ -4,6 +4,8 @@ export interface ParsedScenario {
   options: any;
   interpretation: string;
   confidence: 'high' | 'medium' | 'low';
+  examples?: string[];
+  transformHint?: string;
 }
 
 export function parseNaturalLanguage(input: string): ParsedScenario {
@@ -137,7 +139,13 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
     scenario: null,
     params: {},
     options: {},
-    interpretation: 'I can currently parse: dice, cards, binomial. Examples: "roll 2d6, sum at least 7" · "draw 5 cards, get 2 aces" · "12 trials at 5% chance, at least 1 success" — If you have an egg-breaking problem, think: each egg has break chance p, so n=12 eggs, condition: successes>=1.',
+    interpretation: "I couldn't confidently interpret that input. I currently understand dice, cards, and repeated-trial scenarios.",
     confidence: 'low',
+    examples: [
+      'roll 2d6, sum at least 7',
+      'draw 5 cards, get 2 aces',
+      '12 trials at 5% chance, at least 1 success',
+    ],
+    transformHint: '"12 eggs, chance an egg breaks" → binomial (n=12, success ≥ 1)',
   };
 }

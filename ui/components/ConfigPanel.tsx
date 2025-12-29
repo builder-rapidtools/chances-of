@@ -264,15 +264,43 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                   ) : (
                     <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
                   )}
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">
-                      {parsedScenario.scenario
-                        ? "Here's how we understood that:"
-                        : 'Could not parse input'}
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {parsedScenario.interpretation}
-                    </p>
+                  <div className="flex-1 space-y-2">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {parsedScenario.scenario
+                          ? "Here's how we understood that:"
+                          : 'Could not parse input'}
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                        {parsedScenario.interpretation}
+                      </p>
+                    </div>
+
+                    {/* Show examples and transform hint for parse failures */}
+                    {!parsedScenario.scenario && parsedScenario.examples && (
+                      <div className="space-y-2 pt-2 border-t border-border/50">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Examples I can understand:
+                        </p>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          {parsedScenario.examples.map((example, idx) => (
+                            <li key={idx} className="font-mono">
+                              • {example}
+                            </li>
+                          ))}
+                        </ul>
+                        {parsedScenario.transformHint && (
+                          <div className="pt-2">
+                            <p className="text-xs font-medium text-muted-foreground mb-1">
+                              Example transform:
+                            </p>
+                            <p className="text-xs text-muted-foreground font-mono">
+                              {parsedScenario.transformHint}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
