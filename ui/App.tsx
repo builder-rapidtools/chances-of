@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
 import { ThemeProvider } from './components/theme-provider';
 import Header from './components/Header';
+import IntroSection from './components/IntroSection';
 import ConfigPanel, { ConfigPanelRef } from './components/ConfigPanel';
 import ResultsPanel from './components/ResultsPanel';
 import HistoryPanel, { HistoryEntry } from './components/HistoryPanel';
@@ -97,6 +98,7 @@ function App() {
         <div className="min-h-screen bg-background">
           <div className="gradient-hero">
             <Header result={result} requestPayload={requestPayload} />
+            <IntroSection />
 
             <main className="container mx-auto px-4 py-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

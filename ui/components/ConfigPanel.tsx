@@ -432,12 +432,12 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
               {loading ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Running...
+                  Simulating...
                 </>
               ) : (
                 <>
                   <Play className="mr-2 h-4 w-4" />
-                  Run
+                  Explore
                 </>
               )}
             </Button>

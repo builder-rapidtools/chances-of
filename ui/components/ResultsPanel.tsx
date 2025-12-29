@@ -74,7 +74,7 @@ function ResultsPanel({ result, loading, requestPayload }: ResultsPanelProps) {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-20">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mb-4" />
-          <p className="text-muted-foreground">Computing probability...</p>
+          <p className="text-muted-foreground">Running simulation...</p>
         </CardContent>
       </Card>
     );
@@ -87,9 +87,9 @@ function ResultsPanel({ result, loading, requestPayload }: ResultsPanelProps) {
           <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
             <Sparkles className="h-10 w-10 text-primary" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">Ready to explore?</h3>
+          <h3 className="text-lg font-semibold mb-2">Ready to explore</h3>
           <p className="text-muted-foreground max-w-sm">
-            Configure your scenario and click <strong>Run</strong> to calculate probabilities with confidence intervals
+            Configure a scenario and run a simulation to see probability estimates with uncertainty intervals
           </p>
         </CardContent>
       </Card>
@@ -158,10 +158,10 @@ function ResultsPanel({ result, loading, requestPayload }: ResultsPanelProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  95% Confidence Interval
+                  95% Uncertainty interval
                 </span>
                 <span className="font-mono text-xs text-muted-foreground">
-                  width: {((ciWidth || 0) * 100).toFixed(3)}%
+                  ±{((ciWidth || 0) * 50).toFixed(3)}%
                 </span>
               </div>
 
@@ -235,11 +235,11 @@ function ResultsPanel({ result, loading, requestPayload }: ResultsPanelProps) {
             <div className="flex items-start gap-3">
               <Info className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <p className="text-sm font-medium">Interpretation</p>
+                <p className="text-sm font-medium">How to interpret this</p>
                 <p className="text-xs text-muted-foreground">
                   {result.exact
-                    ? 'Exact under stated assumptions.'
-                    : '95% CI expresses sampling uncertainty, not model uncertainty.'}
+                    ? 'This is exact under the assumptions below. No simulation uncertainty.'
+                    : 'The interval shows simulation uncertainty. It does not reflect whether your assumptions match reality.'}
                 </p>
               </div>
             </div>
@@ -253,7 +253,7 @@ function ResultsPanel({ result, loading, requestPayload }: ResultsPanelProps) {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Info className="h-4 w-4 text-muted-foreground" />
-              Assumptions
+              What this result assumes
             </CardTitle>
           </CardHeader>
           <CardContent>
