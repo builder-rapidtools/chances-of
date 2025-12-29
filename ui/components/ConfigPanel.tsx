@@ -244,10 +244,6 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  // Apply parsed scenario if available and valid
-                  if (parsedScenario && parsedScenario.scenario) {
-                    applyParsedScenario();
-                  }
                 }
               }}
               placeholder='Try: "roll 2 dice, sum at least 7" or "draw 5 cards, get 2 aces"'
