@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import ScenarioForm from './components/ScenarioForm';
-import ResultsCard from './components/ResultsCard';
+import { TooltipProvider } from './components/ui/tooltip';
+import { ThemeProvider } from './components/theme-provider';
+import Header from './components/Header';
+import ConfigPanel from './components/ConfigPanel';
+import ResultsPanel from './components/ResultsPanel';
 
 export interface ResultData {
   scenario: string;
@@ -15,14 +18,30 @@ export interface ResultData {
   stop_reason: string | null;
 }
 
+export interface RequestPayload {
+  scenario: string;
+  params: any;
+  options: any;
+}
+
 function App() {
   const [result, setResult] = useState<ResultData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [requestPayload, setRequestPayload] = useState<RequestPayload | null>(
+    null
+  );
 
   const handleRun = async (scenario: string, params: any, options: any) => {
     setLoading(true);
     setError(null);
+
+    const payload = {
+      scenario,
+      params,
+      options,
+    };
+    setRequestPayload(payload);
 
     try {
       const response = await fetch('/api/run', {
@@ -30,11 +49,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          scenario,
-          params,
-          options,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -52,27 +67,31 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>chances-of</h1>
-        <p className="subtitle">Probability Explorer</p>
-      </header>
+    <ThemeProvider defaultTheme="system" storageKey="chances-of-theme">
+      <TooltipProvider>
+        <div className="min-h-screen bg-background">
+          <div className="gradient-hero">
+            <Header result={result} requestPayload={requestPayload} />
 
-      <div className="app-container">
-        <div className="left-panel">
-          <ScenarioForm onRun={handleRun} loading={loading} />
-          {error && (
-            <div className="error-message">
-              <strong>Error:</strong> {error}
-            </div>
-          )}
-        </div>
+            <main className="container mx-auto px-4 py-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <ConfigPanel onRun={handleRun} loading={loading} error={error} />
+                </div>
 
-        <div className="right-panel">
-          <ResultsCard result={result} loading={loading} />
+                <div>
+                  <ResultsPanel
+                    result={result}
+                    loading={loading}
+                    requestPayload={requestPayload}
+                  />
+                </div>
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
-    </div>
+      </TooltipProvider>
+    </ThemeProvider>
   );
 }
 
