@@ -1,0 +1,26 @@
+{
+  "name": "chances-of",
+  "version": "1.0.0",
+  "description": "CLI tool for calculating probabilities through Monte Carlo simulation and exact calculations",
+  "main": "dist/cli.js",
+  "type": "module",
+  "bin": {
+    "chances-of": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "start": "node dist/cli.js"
+  },
+  "keywords": ["probability", "monte-carlo", "simulation", "cli"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}
