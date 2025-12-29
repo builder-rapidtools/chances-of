@@ -51,10 +51,10 @@ function Header({ result, requestPayload }: HeaderProps) {
   };
 
   return (
-    <header className="border-b bg-gradient-to-r from-card via-card to-primary/5">
+    <header className="border-b bg-card/50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-5 flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold tracking-tight">
             chances-of
           </h1>
           <p className="text-sm text-muted-foreground">

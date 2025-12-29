@@ -137,7 +137,7 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
     scenario: null,
     params: {},
     options: {},
-    interpretation: 'Could not interpret this input. Try: "roll 2 dice" or "draw 3 cards" or "10 trials with 50% chance"',
+    interpretation: 'I can currently parse: dice, cards, binomial. Examples: "roll 2d6, sum at least 7" · "draw 5 cards, get 2 aces" · "12 trials at 5% chance, at least 1 success" — If you have an egg-breaking problem, think: each egg has break chance p, so n=12 eggs, condition: successes>=1.',
     confidence: 'low',
   };
 }

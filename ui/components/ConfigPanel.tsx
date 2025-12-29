@@ -241,6 +241,15 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
             <Input
               value={nlInput}
               onChange={(e) => handleNaturalLanguageInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  // Apply parsed scenario if available and valid
+                  if (parsedScenario && parsedScenario.scenario) {
+                    applyParsedScenario();
+                  }
+                }
+              }}
               placeholder='Try: "roll 2 dice, sum at least 7" or "draw 5 cards, get 2 aces"'
               className="font-sans"
             />
@@ -292,7 +301,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
             <Label>Preset</Label>
             <Select onValueChange={loadPreset}>
               <SelectTrigger>
-                <SelectValue placeholder="Load preset..." />
+                <SelectValue placeholder="Explore presets..." />
               </SelectTrigger>
               <SelectContent>
                 {presets.map((preset) => (
