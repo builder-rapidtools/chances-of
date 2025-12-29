@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { TooltipProvider } from './components/ui/tooltip';
 import { ThemeProvider } from './components/theme-provider';
 import Header from './components/Header';
-import ConfigPanel from './components/ConfigPanel';
+import ConfigPanel, { ConfigPanelRef } from './components/ConfigPanel';
 import ResultsPanel from './components/ResultsPanel';
+import HistoryPanel, { HistoryEntry } from './components/HistoryPanel';
 
 export interface ResultData {
   scenario: string;
@@ -31,6 +32,8 @@ function App() {
   const [requestPayload, setRequestPayload] = useState<RequestPayload | null>(
     null
   );
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const configPanelRef = useRef<ConfigPanelRef>(null);
 
   const handleRun = async (scenario: string, params: any, options: any) => {
     setLoading(true);
@@ -59,11 +62,33 @@ function App() {
       }
 
       setResult(data);
+
+      // Add to history (keep last 5)
+      const historyEntry: HistoryEntry = {
+        scenario,
+        params,
+        options,
+        probability: data.probability,
+        ci_low: data.ci_low,
+        ci_high: data.ci_high,
+        exact: data.exact,
+        timestamp: Date.now(),
+      };
+      setHistory((prev) => [historyEntry, ...prev].slice(0, 5));
     } catch (err: any) {
       setError(err.message || 'Failed to run simulation');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRestoreFromHistory = (entry: HistoryEntry) => {
+    // Restore configuration via ref callback
+    if (configPanelRef.current) {
+      configPanelRef.current.restoreConfig(entry.scenario, entry.params, entry.options);
+    }
+    // Immediately re-run with restored config
+    handleRun(entry.scenario, entry.params, entry.options);
   };
 
   return (
@@ -76,14 +101,23 @@ function App() {
             <main className="container mx-auto px-4 py-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <ConfigPanel onRun={handleRun} loading={loading} error={error} />
+                  <ConfigPanel
+                    ref={configPanelRef}
+                    onRun={handleRun}
+                    loading={loading}
+                    error={error}
+                  />
                 </div>
 
-                <div>
+                <div className="space-y-6">
                   <ResultsPanel
                     result={result}
                     loading={loading}
                     requestPayload={requestPayload}
+                  />
+                  <HistoryPanel
+                    history={history}
+                    onRestore={handleRestoreFromHistory}
                   />
                 </div>
               </div>

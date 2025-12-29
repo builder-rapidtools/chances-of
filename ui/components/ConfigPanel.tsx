@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { ChevronDown, Play, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -28,7 +28,11 @@ interface ConfigPanelProps {
   error: string | null;
 }
 
-function ConfigPanel({ onRun, loading, error }: ConfigPanelProps) {
+export interface ConfigPanelRef {
+  restoreConfig: (scenario: string, params: any, options: any) => void;
+}
+
+const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loading, error }, ref) => {
   const [scenario, setScenario] = useState<'dice' | 'cards' | 'binomial'>('dice');
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
@@ -54,6 +58,41 @@ function ConfigPanel({ onRun, loading, error }: ConfigPanelProps) {
   const [targetCIWidth, setTargetCIWidth] = useState(0.01);
   const [maxTrials, setMaxTrials] = useState(5000000);
   const [batchSize, setBatchSize] = useState(10000);
+
+  // Expose restoreConfig method via ref
+  useImperativeHandle(ref, () => ({
+    restoreConfig: (scenario: string, params: any, options: any) => {
+      setScenario(scenario as 'dice' | 'cards' | 'binomial');
+
+      // Restore params based on scenario
+      if (scenario === 'dice') {
+        setDice(params.dice || 2);
+        setSides(params.sides || 6);
+        setDiceCondition(params.condition || 'sum>=10');
+      } else if (scenario === 'cards') {
+        setDraw(params.draw || 2);
+        setCardsCondition(params.condition || 'aces>=2');
+      } else if (scenario === 'binomial') {
+        setN(params.n || 20);
+        setP(params.p || 0.1);
+        setBinomialCondition(params.condition || 'successes>=3');
+      }
+
+      // Restore options
+      setUseExact(options.exact || false);
+      setSeed(options.seed || 42);
+
+      if (options.target_ci_width !== undefined) {
+        setUsePrecisionStop(true);
+        setTargetCIWidth(options.target_ci_width);
+        setMaxTrials(options.max_trials || 5000000);
+        setBatchSize(options.batch || 10000);
+      } else if (options.trials !== undefined) {
+        setUsePrecisionStop(false);
+        setTrials(options.trials);
+      }
+    },
+  }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -415,6 +454,8 @@ function ConfigPanel({ onRun, loading, error }: ConfigPanelProps) {
       </CardContent>
     </Card>
   );
-}
+});
+
+ConfigPanel.displayName = 'ConfigPanel';
 
 export default ConfigPanel;
