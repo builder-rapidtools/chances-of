@@ -18,7 +18,62 @@ npm install
 npm run build
 ```
 
-## Usage
+## Web UI
+
+**chances-of** includes a local web interface for interactive probability exploration.
+
+### Running the Web UI
+
+```bash
+npm run dev
+```
+
+This starts both the API server (port 3001) and the UI dev server (port 3000). Open your browser to:
+
+```
+http://localhost:3000
+```
+
+### Using the Web UI
+
+The interface is divided into two panels:
+
+- **Left Panel**: Configure your scenario (dice, cards, or binomial), set parameters, and adjust simulation options
+- **Right Panel**: View results including probability, confidence intervals, and detailed metadata
+
+The UI shows:
+- Large, clear probability display
+- Visual confidence interval bar showing uncertainty range
+- Simulation metadata (trials, time, stop reason)
+- Assumptions box echoing all parameters and options
+
+**Note**: The Web UI is a tool for exploring probabilistic assumptions. Confidence intervals express the uncertainty inherent in Monte Carlo estimation. Exact mode eliminates simulation variance by using mathematical formulas.
+
+### API Endpoint
+
+The server exposes a single endpoint:
+
+**POST** `/api/run`
+
+Request body:
+```json
+{
+  "scenario": "dice|cards|binomial",
+  "params": {
+    // scenario-specific parameters
+  },
+  "options": {
+    "seed": 42,
+    "trials": 100000,
+    "exact": false,
+    "target_ci_width": 0.01
+  }
+}
+```
+
+Response: Same JSON schema as CLI `--json` output.
+
+## CLI Usage
 
 ```bash
 chances-of <scenario> [options]
@@ -264,6 +319,9 @@ chances-of binomial --n 20 --p 0.1 --condition "successes>=3" --exact --json | j
 - `npm run build`: Compile TypeScript to JavaScript
 - `npm test`: Run test suite with Vitest
 - `npm start`: Run the CLI (must build first)
+- `npm run dev`: Run both API server and UI dev server concurrently
+- `npm run dev:api`: Run API server in watch mode
+- `npm run dev:ui`: Run Vite UI dev server
 
 ### Project Structure
 
@@ -277,6 +335,15 @@ src/
     dice.ts                # Dice simulation
     cards.ts               # Cards simulation
     binomial.ts            # Binomial simulation
+server/
+  index.ts                 # Express API server
+ui/
+  main.tsx                 # React entry point
+  App.tsx                  # Main app component
+  App.css                  # Styling
+  components/
+    ScenarioForm.tsx       # Scenario configuration form
+    ResultsCard.tsx        # Results display
 test/
   wilson.test.ts           # Wilson CI tests
   dice.test.ts             # Dice scenario tests
