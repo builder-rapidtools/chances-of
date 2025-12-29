@@ -11,11 +11,34 @@ export interface ParsedScenario {
 export function parseNaturalLanguage(input: string): ParsedScenario {
   const lower = input.toLowerCase().trim();
 
+  // Domain gating: check for required keywords first
+  const hasDiceKeywords = /\b(dice|roll|sides?|faces?)\b|d\d+/.test(lower);
+  const hasCardKeywords = /\b(card|cards|deck|draw|deal|ace|aces|hearts?|diamonds?|clubs?|spades?|jack|queen|king)\b/.test(lower);
+  const hasBinomialKeywords = /\b(trial|trials|flip|flips|toss|tosses|coin|attempt|attempts|independent|each|per)\b/.test(lower) || /%\s*(?:chance|probability|success)/.test(lower);
+
   // Dice patterns
-  const diceMatch = lower.match(/(\d+)\s*(?:d|dice|die)(?:\s*(?:with|of)?\s*(\d+)\s*(?:sides?|faces?))?/);
-  if (diceMatch || lower.includes('roll') || lower.includes('dice') || lower.includes('die')) {
-    const dice = diceMatch ? parseInt(diceMatch[1]) : 2;
-    const sides = diceMatch && diceMatch[2] ? parseInt(diceMatch[2]) : 6;
+  const diceMatch = lower.match(/(\d+)\s*(?:d(\d+)|(?:dice|die)(?:\s*(?:with|of)?\s*(\d+)\s*(?:sides?|faces?))?)/);
+  if (hasDiceKeywords && diceMatch) {
+    const dice = parseInt(diceMatch[1]);
+    const sides = diceMatch[2] ? parseInt(diceMatch[2]) : (diceMatch[3] ? parseInt(diceMatch[3]) : 6);
+
+    // Validate extracted params
+    if (!dice || dice < 1 || dice > 100 || !sides || sides < 2 || sides > 100) {
+      // Invalid params, fail parsing
+      return {
+        scenario: null,
+        params: {},
+        options: {},
+        interpretation: "I couldn't confidently interpret that input. I currently understand dice, cards, and repeated-trial scenarios.",
+        confidence: 'low',
+        examples: [
+          'roll 2d6, sum at least 7',
+          'draw 5 cards, get 2 aces',
+          '12 trials at 5% chance, at least 1 success',
+        ],
+        transformHint: '"12 eggs, chance an egg breaks" → binomial (n=12, success ≥ 1)',
+      };
+    }
 
     // Look for conditions
     let condition = 'sum>=7';
@@ -55,8 +78,27 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
 
   // Card patterns
   const cardMatch = lower.match(/(?:draw|drawing|deal|dealt?)\s*(\d+)\s*(?:card|cards)/);
-  if (cardMatch || lower.includes('card') || lower.includes('deck')) {
-    const draw = cardMatch ? parseInt(cardMatch[1]) : 2;
+  const cardCountMatch = lower.match(/(\d+)\s*(?:card|cards)/);
+
+  if (hasCardKeywords && cardCountMatch) {
+    const draw = parseInt(cardCountMatch[1]);
+
+    // Validate extracted params
+    if (!draw || draw < 1 || draw > 52) {
+      return {
+        scenario: null,
+        params: {},
+        options: {},
+        interpretation: "I couldn't confidently interpret that input. I currently understand dice, cards, and repeated-trial scenarios.",
+        confidence: 'low',
+        examples: [
+          'roll 2d6, sum at least 7',
+          'draw 5 cards, get 2 aces',
+          '12 trials at 5% chance, at least 1 success',
+        ],
+        transformHint: '"12 eggs, chance an egg breaks" → binomial (n=12, success ≥ 1)',
+      };
+    }
 
     let condition = 'aces>=1';
     let conditionDesc = 'at least 1 ace';
@@ -94,12 +136,12 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
   }
 
   // Binomial patterns
-  const trialsMatch = lower.match(/(\d+)\s*(?:trials?|attempts?|times|flips?|tosses?)/);
+  const trialsMatch = lower.match(/(\d+)\s*(?:\w+\s+)?(?:trials?|attempts?|times|flips?|tosses?)/);
   const probMatch = lower.match(/(\d+(?:\.\d+)?)\s*%\s*(?:chance|probability|success)/);
   const probFracMatch = lower.match(/(\d+(?:\.\d+)?)\s*(?:chance|probability|success)/);
 
-  if (trialsMatch || probMatch || probFracMatch || lower.includes('trial') || lower.includes('flip')) {
-    const n = trialsMatch ? parseInt(trialsMatch[1]) : 20;
+  if (hasBinomialKeywords && trialsMatch) {
+    const n = parseInt(trialsMatch[1]);
     let p = 0.5;
 
     if (probMatch) {
@@ -107,6 +149,23 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
     } else if (probFracMatch && !probMatch) {
       const val = parseFloat(probFracMatch[1]);
       p = val > 1 ? val / 100 : val;
+    }
+
+    // Validate extracted params
+    if (!n || n < 1 || n > 1000000 || p <= 0 || p > 1) {
+      return {
+        scenario: null,
+        params: {},
+        options: {},
+        interpretation: "I couldn't confidently interpret that input. I currently understand dice, cards, and repeated-trial scenarios.",
+        confidence: 'low',
+        examples: [
+          'roll 2d6, sum at least 7',
+          'draw 5 cards, get 2 aces',
+          '12 trials at 5% chance, at least 1 success',
+        ],
+        transformHint: '"12 eggs, chance an egg breaks" → binomial (n=12, success ≥ 1)',
+      };
     }
 
     let condition = 'successes>=1';
