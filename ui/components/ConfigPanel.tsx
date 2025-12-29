@@ -1,5 +1,5 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
-import { ChevronDown, Play, RotateCcw } from 'lucide-react';
+import { ChevronDown, Play, RotateCcw, Sparkles, Check, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Button } from './ui/button';
@@ -21,6 +21,7 @@ import {
 } from './ui/select';
 import { Separator } from './ui/separator';
 import { presets } from '../lib/presets';
+import { parseNaturalLanguage, ParsedScenario } from '../lib/nlParser';
 
 interface ConfigPanelProps {
   onRun: (scenario: string, params: any, options: any) => void;
@@ -35,6 +36,10 @@ export interface ConfigPanelRef {
 const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loading, error }, ref) => {
   const [scenario, setScenario] = useState<'dice' | 'cards' | 'binomial'>('dice');
   const [advancedOpen, setAdvancedOpen] = useState(false);
+
+  // Natural language input
+  const [nlInput, setNlInput] = useState('');
+  const [parsedScenario, setParsedScenario] = useState<ParsedScenario | null>(null);
 
   // Dice state
   const [dice, setDice] = useState(2);
@@ -93,6 +98,52 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
       }
     },
   }));
+
+  const handleNaturalLanguageInput = (input: string) => {
+    setNlInput(input);
+    if (input.trim().length > 0) {
+      const parsed = parseNaturalLanguage(input);
+      setParsedScenario(parsed);
+    } else {
+      setParsedScenario(null);
+    }
+  };
+
+  const applyParsedScenario = () => {
+    if (!parsedScenario || !parsedScenario.scenario) return;
+
+    // Apply to form state
+    if (parsedScenario.scenario === 'dice') {
+      setScenario('dice');
+      setDice(parsedScenario.params.dice);
+      setSides(parsedScenario.params.sides);
+      setDiceCondition(parsedScenario.params.condition);
+    } else if (parsedScenario.scenario === 'cards') {
+      setScenario('cards');
+      setDraw(parsedScenario.params.draw);
+      setCardsCondition(parsedScenario.params.condition);
+    } else if (parsedScenario.scenario === 'binomial') {
+      setScenario('binomial');
+      setN(parsedScenario.params.n);
+      setP(parsedScenario.params.p);
+      setBinomialCondition(parsedScenario.params.condition);
+    }
+
+    // Apply options
+    if (parsedScenario.options.exact !== undefined) {
+      setUseExact(parsedScenario.options.exact);
+    }
+    if (parsedScenario.options.seed !== undefined) {
+      setSeed(parsedScenario.options.seed);
+    }
+    if (parsedScenario.options.trials !== undefined) {
+      setTrials(parsedScenario.options.trials);
+    }
+
+    // Clear NL input after applying
+    setNlInput('');
+    setParsedScenario(null);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,6 +232,62 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Natural Language Input */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <Label>Describe your scenario</Label>
+            </div>
+            <Input
+              value={nlInput}
+              onChange={(e) => handleNaturalLanguageInput(e.target.value)}
+              placeholder='Try: "roll 2 dice, sum at least 7" or "draw 5 cards, get 2 aces"'
+              className="font-sans"
+            />
+
+            {parsedScenario && (
+              <div
+                className={`rounded-lg border p-3 space-y-2 ${
+                  parsedScenario.scenario
+                    ? 'bg-primary/5 border-primary/20'
+                    : 'bg-destructive/5 border-destructive/20'
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  {parsedScenario.scenario ? (
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                  )}
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium">
+                      {parsedScenario.scenario
+                        ? "Here's how we understood that:"
+                        : 'Could not parse input'}
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {parsedScenario.interpretation}
+                    </p>
+                  </div>
+                </div>
+
+                {parsedScenario.scenario && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="default"
+                    onClick={applyParsedScenario}
+                    className="w-full"
+                  >
+                    Apply to form
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
           <div className="space-y-2">
             <Label>Preset</Label>
             <Select onValueChange={loadPreset}>
