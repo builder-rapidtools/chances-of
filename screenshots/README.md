@@ -68,6 +68,60 @@ This folder contains screenshots for the main README.md documentation.
    - Scroll to the history panel below results
    - Capture the "Recent experiments" section
 
+## Mac Screenshot Instructions
+
+**Saving screenshots as files (not clipboard):**
+
+- **Cmd + Shift + 4** (select area) → saves to Desktop by default as `Screen Shot YYYY-MM-DD at HH.MM.SS.png`
+- **Cmd + Shift + 5** → opens screenshot toolbar with more options:
+  - Click "Options" to choose save location (Desktop/Documents recommended)
+  - Select capture mode (window, selection, entire screen)
+
+**Important:** If screenshot goes to clipboard instead of saving a file, you held **Ctrl** by mistake. Use **Cmd + Shift + 4** WITHOUT Ctrl.
+
+**Moving files into the screenshots folder:**
+
+Option 1 - Finder:
+1. Open Finder to Desktop
+2. Drag and drop screenshot file into `~/chances-of/screenshots/`
+3. Rename to exact required filename (`ui-main.png`, `parse-failure.png`, or `run-history.png`)
+
+Option 2 - Terminal:
+```bash
+# From project root (~/chances-of)
+mv ~/Desktop/Screen\ Shot*.png screenshots/ui-main.png
+
+# Or if already renamed on Desktop:
+mv ~/Desktop/ui-main.png screenshots/ui-main.png
+```
+
+## Recommended Scenarios for Each Screenshot
+
+### For `ui-main.png`:
+Use a dice example that shows clear results:
+- **Natural language input:** "roll 2d6, sum at least 7"
+- This should parse successfully and show results panel with ~58.3% probability
+- Shows NL input working, config panel, and results panel
+
+### For `parse-failure.png`:
+Use an out-of-domain query to trigger the parse failure UI:
+- **Natural language input:** "What are the chances my sandwich goes off in 3 days?"
+- After the false-positive fix, this should show the error panel with:
+  - "I couldn't confidently interpret that input..."
+  - Examples of valid inputs
+  - Transform hint about egg-breaking scenario
+- Capture the entire ConfigPanel area showing the error state
+
+### For `run-history.png`:
+Run these scenarios in sequence to populate history:
+1. "roll 2d6, sum at least 7"
+2. "draw 5 cards, get 2 aces"
+3. "12 trials at 5% chance, at least 1 success"
+4. "3d20 max at least 15"
+5. "draw 7 cards, any hearts"
+
+Then scroll to the "Recent experiments" panel and capture all 5 entries showing different scenario types, badges, and probabilities.
+
 ## Placeholder Status
 
 Until screenshots are added, the README will show broken image links. This is expected and serves as a reminder to add real screenshots before promoting the repository.
