@@ -1,12 +1,12 @@
 name = "chances-of-api"
-main = "src/index.ts"
+main = "dist/index.js"
 compatibility_date = "2024-01-01"
 
 # Account: jamesredwards89@gmail.com
 # Organization: Tailored Tools
 
 [build]
-command = "npm run build:worker"
+command = "npm run build"
 
 # Environment for production
 [env.production]
