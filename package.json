@@ -9,12 +9,15 @@
   },
   "scripts": {
   "build": "tsc -p tsconfig.json",
+  "build:worker": "cd cf/worker && npm install && npm run build",
   "test:unit": "vitest run",
   "test": "npm run build && npm run test:unit",
   "start": "node dist/cli.js",
   "dev:api": "tsx watch server/index.ts",
   "dev:ui": "vite",
-  "dev": "concurrently \"npm run dev:api\" \"npm run dev:ui\""
+  "dev": "concurrently \"npm run dev:api\" \"npm run dev:ui\"",
+  "worker:dev": "cd cf/worker && npm run dev",
+  "worker:deploy": "cd cf/worker && npm run deploy"
 },
   "keywords": [
     "probability",
