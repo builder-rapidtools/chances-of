@@ -48,7 +48,9 @@ function App() {
     setRequestPayload(payload);
 
     try {
-      const response = await fetch('/api/run', {
+      // Use env var for API base URL, default to same-origin
+      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+      const response = await fetch(`${apiBase}/api/run`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
