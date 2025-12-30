@@ -1,6 +1,7 @@
 import { Dices, Spade, BarChart3, Settings, Play, Eye, HelpCircle } from 'lucide-react';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -9,11 +10,6 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from './ui/tooltip';
 import {
   Popover,
   PopoverContent,
@@ -46,18 +42,7 @@ export function HowToUseGuide() {
             </h3>
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>
-                1. <strong className="text-foreground">Choose a scenario</strong> from the tabs: Dice, Cards, or{' '}
-                <Tooltip delayDuration={200}>
-                  <TooltipTrigger asChild>
-                    <span className="text-foreground underline decoration-dotted cursor-help">
-                      Binomial
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs bg-foreground text-background border-foreground/20">
-                    <p className="font-semibold mb-1">What's Binomial?</p>
-                    <p className="text-xs opacity-90">Repeating the same yes/no experiment multiple times. Like flipping a coin 10 times, or trying to make 20 basketball shots where each shot has a 60% success rate.</p>
-                  </TooltipContent>
-                </Tooltip>
+                1. <strong className="text-foreground">Choose a scenario</strong> from the tabs: Dice, Cards, or Binomial (repeated trials)
               </p>
               <p>
                 2. <strong className="text-foreground">Configure parameters</strong> like number of dice, card draws, or trial counts
@@ -127,7 +112,7 @@ export function HowToUseGuide() {
                           <HelpCircle className="h-3 w-3" />
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent side="right" className="max-w-xs">
+                      <PopoverContent side="bottom" align="start" className="max-w-xs">
                         <p className="font-semibold mb-1">What's Binomial?</p>
                         <p className="text-xs">Repeating the same yes/no experiment multiple times. Like flipping a coin 10 times, or trying to make 20 basketball shots where each shot has a 60% success rate. Each trial is independent with the same probability.</p>
                       </PopoverContent>
@@ -214,6 +199,15 @@ export function HowToUseGuide() {
               <li>Toggle <strong className="text-foreground">dark mode</strong> for comfortable viewing</li>
             </ul>
           </div>
+        </div>
+
+        {/* Close button for mobile */}
+        <div className="pt-4 sm:hidden">
+          <DialogClose asChild>
+            <Button variant="outline" className="w-full">
+              Close
+            </Button>
+          </DialogClose>
         </div>
       </DialogContent>
     </Dialog>
