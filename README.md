@@ -8,6 +8,20 @@ A thinking instrument for exploring uncertainty through simulation.
 
 Think of it as a probability microscope: configure a scenario (rolling dice, drawing cards, repeated trials), run a simulation, and examine what happens when chance plays out thousands of times.
 
+## Live Demo
+
+Try it now in your browser:
+
+- **UI**: https://chances-of.pages.dev
+- **API**: https://chances-of-api.jamesredwards89.workers.dev
+
+Simulations run server-side via Cloudflare Worker; very large trials may be capped.
+
+**Deployment:**
+- UI: Cloudflare Pages
+- API: Cloudflare Worker
+- Env var: `VITE_API_BASE_URL`
+
 ## What problem does it solve?
 
 Probability is hard to reason about. Our intuitions fail us. A "30% chance" feels different depending on context, and we're bad at estimating compound probabilities (like "if I flip 10 coins, what's the chance at least 7 are heads?").
