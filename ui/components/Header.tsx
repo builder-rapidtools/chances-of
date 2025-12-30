@@ -1,63 +1,29 @@
-import { Moon, Sun, Copy, Terminal } from 'lucide-react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Copy, Terminal, Sun, Moon } from 'lucide-react';
+import HowToUseGuide from './HowToUseGuide';
 import { useTheme } from './theme-provider';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from './ui/tooltip';
-import { ResultData, RequestPayload } from '../App';
-import { HowToUseGuide } from './HowToUseGuide';
 
 interface HeaderProps {
-  result: ResultData | null;
-  requestPayload: RequestPayload | null;
+  copyCLICommand: () => void;
+  copyJSON: () => void;
+  requestPayload?: unknown;
+  result?: unknown;
 }
 
-function Header({ result, requestPayload }: HeaderProps) {
-  const { theme, setTheme } = useTheme();
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
-  const copyCLICommand = () => {
-    if (!requestPayload) return;
-
-    const { scenario, params, options } = requestPayload;
-    let cmd = `chances-of ${scenario}`;
-
-    // Add params
-    Object.entries(params).forEach(([key, value]) => {
-      cmd += ` --${key} ${value}`;
-    });
-
-    // Add options
-    if (options.exact) {
-      cmd += ' --exact';
-    } else {
-      if (options.seed !== undefined) cmd += ` --seed ${options.seed}`;
-      if (options.trials) cmd += ` --trials ${options.trials}`;
-      if (options.target_ci_width)
-        cmd += ` --target-ci-width ${options.target_ci_width}`;
-    }
-
-    navigator.clipboard.writeText(cmd);
-  };
-
-  const copyJSON = () => {
-    if (!result) return;
-    navigator.clipboard.writeText(JSON.stringify(result, null, 2));
-  };
+export default function Header({
+  copyCLICommand,
+  copyJSON,
+  requestPayload,
+  result,
+}: HeaderProps) {
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="border-b bg-card/50 backdrop-blur-sm">
-      <div className="container mx-auto px-4 py-3 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
-        <div className="space-y-1 text-center sm:text-left">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            What Are the Chances?
-          </h1>
+    <header className="border-b">
+      <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold">Chances Of</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
             Explore probability through simulation
           </p>
@@ -68,9 +34,7 @@ function Header({ result, requestPayload }: HeaderProps) {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Tooltip>
-  <TooltipTrigger asChild>
-    <Button
+              <Button
                 variant="outline"
                 size="icon"
                 onClick={copyCLICommand}
@@ -79,9 +43,6 @@ function Header({ result, requestPayload }: HeaderProps) {
               >
                 <Terminal className="h-4 w-4" />
               </Button>
-  </TooltipTrigger>
-  <TooltipContent side="bottom" align="center" className="text-xs">Terminal</TooltipContent>
-</Tooltip>
             </TooltipTrigger>
             <TooltipContent side="bottom" align="center" className="text-xs">
               Terminal
@@ -90,9 +51,7 @@ function Header({ result, requestPayload }: HeaderProps) {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Tooltip>
-  <TooltipTrigger asChild>
-    <Button
+              <Button
                 variant="outline"
                 size="icon"
                 onClick={copyJSON}
@@ -101,9 +60,6 @@ function Header({ result, requestPayload }: HeaderProps) {
               >
                 <Copy className="h-4 w-4" />
               </Button>
-  </TooltipTrigger>
-  <TooltipContent side="bottom" align="center" className="text-xs">Copy</TooltipContent>
-</Tooltip>
             </TooltipTrigger>
             <TooltipContent side="bottom" align="center" className="text-xs">
               Copy
@@ -112,18 +68,18 @@ function Header({ result, requestPayload }: HeaderProps) {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Tooltip>
-  <TooltipTrigger asChild>
-    <Button variant="outline" size="icon" onClick={toggleTheme} aria-label="Theme">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleTheme}
+                aria-label="Theme"
+              >
                 {theme === 'dark' ? (
                   <Sun className="h-4 w-4" />
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
               </Button>
-  </TooltipTrigger>
-  <TooltipContent side="bottom" align="center" className="text-xs">Theme</TooltipContent>
-</Tooltip>
             </TooltipTrigger>
             <TooltipContent side="bottom" align="center" className="text-xs">
               Theme
@@ -134,5 +90,3 @@ function Header({ result, requestPayload }: HeaderProps) {
     </header>
   );
 }
-
-export default Header;
