@@ -52,17 +52,17 @@ function Header({ result, requestPayload }: HeaderProps) {
 
   return (
     <header className="border-b bg-card/50 backdrop-blur-sm">
-      <div className="container mx-auto px-4 py-5 flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">
+      <div className="container mx-auto px-4 py-3 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+        <div className="space-y-1 text-center sm:text-left">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
             chances-of
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Explore uncertainty through simulation
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <HowToUseGuide />
 
           <Tooltip>
