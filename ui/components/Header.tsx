@@ -1,5 +1,6 @@
 import { Moon, Sun, Copy, Terminal } from 'lucide-react';
 import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useTheme } from './theme-provider';
 import {
   Tooltip,
@@ -67,7 +68,9 @@ function Header({ result, requestPayload }: HeaderProps) {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
+              <Tooltip>
+  <TooltipTrigger asChild>
+    <Button
                 variant="outline"
                 size="icon"
                 onClick={copyCLICommand}
@@ -76,6 +79,9 @@ function Header({ result, requestPayload }: HeaderProps) {
               >
                 <Terminal className="h-4 w-4" />
               </Button>
+  </TooltipTrigger>
+  <TooltipContent side="bottom" align="center" className="text-xs">Terminal</TooltipContent>
+</Tooltip>
             </TooltipTrigger>
             <TooltipContent side="bottom" align="center" className="text-xs">
               Terminal
@@ -84,7 +90,9 @@ function Header({ result, requestPayload }: HeaderProps) {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
+              <Tooltip>
+  <TooltipTrigger asChild>
+    <Button
                 variant="outline"
                 size="icon"
                 onClick={copyJSON}
@@ -93,6 +101,9 @@ function Header({ result, requestPayload }: HeaderProps) {
               >
                 <Copy className="h-4 w-4" />
               </Button>
+  </TooltipTrigger>
+  <TooltipContent side="bottom" align="center" className="text-xs">Copy</TooltipContent>
+</Tooltip>
             </TooltipTrigger>
             <TooltipContent side="bottom" align="center" className="text-xs">
               Copy
@@ -101,13 +112,18 @@ function Header({ result, requestPayload }: HeaderProps) {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" onClick={toggleTheme} aria-label="Theme">
+              <Tooltip>
+  <TooltipTrigger asChild>
+    <Button variant="outline" size="icon" onClick={toggleTheme} aria-label="Theme">
                 {theme === 'dark' ? (
                   <Sun className="h-4 w-4" />
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
               </Button>
+  </TooltipTrigger>
+  <TooltipContent side="bottom" align="center" className="text-xs">Theme</TooltipContent>
+</Tooltip>
             </TooltipTrigger>
             <TooltipContent side="bottom" align="center" className="text-xs">
               Theme
