@@ -64,6 +64,10 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
   const [maxTrials, setMaxTrials] = useState(5000000);
   const [batchSize, setBatchSize] = useState(10000);
 
+  // Progressive disclosure
+  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
+  const [currentInterpretation, setCurrentInterpretation] = useState<string | null>(null);
+
   // Expose restoreConfig method via ref
   useImperativeHandle(ref, () => ({
     restoreConfig: (scenario: string, params: any, options: any) => {
@@ -145,8 +149,24 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
     setParsedScenario(null);
   };
 
+  const generateInterpretation = (): string => {
+    switch (scenario) {
+      case 'dice':
+        return `Rolling ${dice} ${dice === 1 ? 'die' : 'dice'} with ${sides} sides each, checking: ${diceCondition}`;
+      case 'cards':
+        return `Drawing ${draw} ${draw === 1 ? 'card' : 'cards'} from a standard deck, checking: ${cardsCondition}`;
+      case 'binomial':
+        return `Running ${n} independent ${n === 1 ? 'trial' : 'trials'}, each with ${(p * 100).toFixed(1)}% chance, checking: ${binomialCondition}`;
+      default:
+        return '';
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Generate and store interpretation
+    setCurrentInterpretation(generateInterpretation());
 
     let params: any = {};
     let options: any = {
@@ -224,10 +244,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
     <Card className="shadow-medium">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          Configuration
-          <Badge variant="secondary" className="text-xs">
-            Interactive
-          </Badge>
+          Set up your scenario
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -343,13 +360,13 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="dice">Dice</TabsTrigger>
               <TabsTrigger value="cards">Cards</TabsTrigger>
-              <TabsTrigger value="binomial">Binomial</TabsTrigger>
+              <TabsTrigger value="binomial">Repeated Trials</TabsTrigger>
             </TabsList>
 
             <TabsContent value="dice" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="dice">Dice</Label>
+                  <Label htmlFor="dice">How many dice?</Label>
                   <Input
                     id="dice"
                     type="number"
@@ -365,7 +382,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sides">Sides</Label>
+                  <Label htmlFor="sides">Sides per die?</Label>
                   <Input
                     id="sides"
                     type="number"
@@ -382,7 +399,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="diceCondition">Condition</Label>
+                <Label htmlFor="diceCondition">What counts as success?</Label>
                 <Input
                   id="diceCondition"
                   value={diceCondition}
@@ -390,14 +407,14 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                   placeholder="sum>=10, sum==7, max>=5, min>=3"
                 />
                 <p className="text-xs text-muted-foreground">
-                  sum&gt;=X, sum==X, max&gt;=X, min&gt;=X
+                  Examples: sum&gt;=10, sum==7, max&gt;=5, min&gt;=3
                 </p>
               </div>
             </TabsContent>
 
             <TabsContent value="cards" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="draw">Draw (cards)</Label>
+                <Label htmlFor="draw">How many cards to draw?</Label>
                 <Input
                   id="draw"
                   type="number"
@@ -413,7 +430,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cardsCondition">Condition</Label>
+                <Label htmlFor="cardsCondition">What are you looking for?</Label>
                 <Input
                   id="cardsCondition"
                   value={cardsCondition}
@@ -421,7 +438,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                   placeholder="aces>=2, hearts>=3"
                 />
                 <p className="text-xs text-muted-foreground">
-                  aces&gt;=k, hearts&gt;=k, any_rank=K, any_suit=hearts
+                  Examples: aces&gt;=2, hearts&gt;=3, any_rank=K, any_suit=hearts
                 </p>
               </div>
             </TabsContent>
@@ -429,7 +446,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
             <TabsContent value="binomial" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="n">n (trials)</Label>
+                  <Label htmlFor="n">How many attempts?</Label>
                   <Input
                     id="n"
                     type="number"
@@ -445,7 +462,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="p">p (probability)</Label>
+                  <Label htmlFor="p">Chance each time? (0-1)</Label>
                   <Input
                     id="p"
                     type="number"
@@ -460,10 +477,13 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                     max="1"
                     step="0.01"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    0.5 = 50%, 0.1 = 10%
+                  </p>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="binomialCondition">Condition</Label>
+                <Label htmlFor="binomialCondition">How many successes?</Label>
                 <Input
                   id="binomialCondition"
                   value={binomialCondition}
@@ -471,7 +491,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                   placeholder="successes>=3, successes==5"
                 />
                 <p className="text-xs text-muted-foreground">
-                  successes&gt;=X, successes==X
+                  Examples: successes&gt;=3, successes==5
                 </p>
               </div>
             </TabsContent>
@@ -479,18 +499,98 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
 
           <Separator />
 
+          {/* How we understood this */}
+          {currentInterpretation && (
+            <div className="rounded-lg border bg-primary/5 border-primary/20 p-4 space-y-3">
+              <div>
+                <p className="text-sm font-medium text-foreground mb-2">
+                  How we understood this
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {currentInterpretation}
+                </p>
+              </div>
+
+              {/* Show technical details toggle */}
+              <Collapsible open={showTechnicalDetails} onOpenChange={setShowTechnicalDetails}>
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors underline decoration-dotted underline-offset-4"
+                  >
+                    {showTechnicalDetails ? 'Hide technical details' : 'Show technical details'}
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 pt-3">
+                  <div className="text-xs space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Scenario type:</span>
+                      <span className="font-mono">{scenario}</span>
+                    </div>
+                    {scenario === 'dice' && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Exact condition:</span>
+                          <span className="font-mono">{diceCondition}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Parameters:</span>
+                          <span className="font-mono">{dice}d{sides}</span>
+                        </div>
+                      </>
+                    )}
+                    {scenario === 'cards' && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Exact condition:</span>
+                          <span className="font-mono">{cardsCondition}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Draw count:</span>
+                          <span className="font-mono">{draw}</span>
+                        </div>
+                      </>
+                    )}
+                    {scenario === 'binomial' && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Exact condition:</span>
+                          <span className="font-mono">{binomialCondition}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Parameters:</span>
+                          <span className="font-mono">n={n}, p={p}</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Method:</span>
+                      <span className="font-mono">{useExact ? 'Exact (mathematical)' : 'Simulation (Monte Carlo)'}</span>
+                    </div>
+                    {!useExact && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Trials:</span>
+                        <span className="font-mono">{usePrecisionStop ? `up to ${maxTrials.toLocaleString()}` : trials.toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          )}
+
           {(scenario === 'cards' || scenario === 'binomial') && (
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Exact calculation</Label>
+                <Label>Use exact math (when possible)</Label>
                 {scenario === 'cards' && useExact && (
                   <p className="text-xs text-muted-foreground">
-                    Only for aces&gt;=k and hearts&gt;=k
+                    Works for aces and hearts only
                   </p>
                 )}
                 {useExact && (
                   <p className="text-xs text-muted-foreground">
-                    Disables CI (no sampling uncertainty)
+                    No sampling uncertainty
                   </p>
                 )}
               </div>
@@ -505,7 +605,7 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                 size="sm"
                 className="w-full justify-between"
               >
-                <span>Advanced Options</span>
+                <span>More options</span>
                 <ChevronDown
                   className={`h-4 w-4 transition-transform ${
                     advancedOpen ? 'rotate-180' : ''
