@@ -55,10 +55,10 @@ function Header({ result, requestPayload }: HeaderProps) {
       <div className="container mx-auto px-4 py-3 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
         <div className="space-y-1 text-center sm:text-left">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            chances-of
+            What Are the Chances?
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Explore uncertainty through simulation
+            Explore probability through simulation
           </p>
         </div>
 
