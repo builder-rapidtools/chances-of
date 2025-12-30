@@ -26,6 +26,114 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+// Validation helpers
+function isValidNumber(value: any): boolean {
+  return typeof value === 'number' && !isNaN(value) && isFinite(value);
+}
+
+function validateDiceParams(params: any): string | null {
+  if (!isValidNumber(params.dice)) {
+    return 'dice must be a valid number';
+  }
+  if (params.dice < 1 || params.dice > 100) {
+    return 'dice must be between 1 and 100';
+  }
+
+  if (!isValidNumber(params.sides)) {
+    return 'sides must be a valid number';
+  }
+  if (params.sides < 2 || params.sides > 10000) {
+    return 'sides must be between 2 and 10000';
+  }
+
+  if (typeof params.condition !== 'string' || params.condition.trim() === '') {
+    return 'condition must be a non-empty string';
+  }
+
+  return null;
+}
+
+function validateCardsParams(params: any): string | null {
+  if (!isValidNumber(params.draw)) {
+    return 'draw must be a valid number';
+  }
+  if (params.draw < 1 || params.draw > 52) {
+    return 'draw must be between 1 and 52';
+  }
+
+  if (typeof params.condition !== 'string' || params.condition.trim() === '') {
+    return 'condition must be a non-empty string';
+  }
+
+  return null;
+}
+
+function validateBinomialParams(params: any): string | null {
+  if (!isValidNumber(params.n)) {
+    return 'n must be a valid number';
+  }
+  if (params.n < 1 || params.n > 10000) {
+    return 'n must be between 1 and 10000';
+  }
+
+  if (!isValidNumber(params.p)) {
+    return 'p must be a valid number';
+  }
+  if (params.p <= 0 || params.p > 1) {
+    return 'p must be between 0 (exclusive) and 1 (inclusive)';
+  }
+
+  if (typeof params.condition !== 'string' || params.condition.trim() === '') {
+    return 'condition must be a non-empty string';
+  }
+
+  return null;
+}
+
+function validateOptions(options: any): string | null {
+  if (options.seed !== undefined && !isValidNumber(options.seed)) {
+    return 'seed must be a valid number';
+  }
+
+  if (options.trials !== undefined) {
+    if (!isValidNumber(options.trials)) {
+      return 'trials must be a valid number';
+    }
+    if (options.trials < 1 || options.trials > 1000000) {
+      return 'trials must be between 1 and 1000000';
+    }
+  }
+
+  if (options.max_trials !== undefined) {
+    if (!isValidNumber(options.max_trials)) {
+      return 'max_trials must be a valid number';
+    }
+    if (options.max_trials < 1 || options.max_trials > 1000000) {
+      return 'max_trials must be between 1 and 1000000';
+    }
+  }
+
+  if (options.target_ci_width !== undefined) {
+    if (!isValidNumber(options.target_ci_width)) {
+      return 'target_ci_width must be a valid number';
+    }
+    if (options.target_ci_width <= 0 || options.target_ci_width > 1) {
+      return 'target_ci_width must be between 0 (exclusive) and 1 (inclusive)';
+    }
+  }
+
+  if (options.batch !== undefined) {
+    if (!isValidNumber(options.batch)) {
+      return 'batch must be a valid number';
+    }
+    if (options.batch < 1) {
+      return 'batch must be at least 1';
+    }
+  }
+
+  return null;
+}
+
 function handleCors(request: Request): Response | null {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
@@ -55,6 +163,42 @@ async function handleRun(request: Request): Promise<Response> {
       );
     }
 
+    // Validate params based on scenario
+    let validationError: string | null = null;
+    switch (scenario) {
+      case 'dice':
+        validationError = validateDiceParams(params);
+        break;
+      case 'cards':
+        validationError = validateCardsParams(params);
+        break;
+      case 'binomial':
+        validationError = validateBinomialParams(params);
+        break;
+    }
+
+    if (validationError) {
+      return new Response(
+        JSON.stringify({ error: validationError }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        }
+      );
+    }
+
+    // Validate options
+    const optionsError = validateOptions(options);
+    if (optionsError) {
+      return new Response(
+        JSON.stringify({ error: optionsError }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        }
+      );
+    }
+
     // Build Monte Carlo options
     const mcOptions: MonteCarloOptions = {
       seed: options.seed ?? 42,
@@ -69,17 +213,6 @@ async function handleRun(request: Request): Promise<Response> {
     try {
       switch (scenario) {
         case 'dice':
-          if (!params.dice || !params.sides || !params.condition) {
-            return new Response(
-              JSON.stringify({
-                error: 'Dice scenario requires: dice, sides, condition',
-              }),
-              {
-                status: 400,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders },
-              }
-            );
-          }
           result = runDiceSimulation(
             {
               dice: params.dice,
@@ -91,17 +224,6 @@ async function handleRun(request: Request): Promise<Response> {
           break;
 
         case 'cards':
-          if (!params.draw || !params.condition) {
-            return new Response(
-              JSON.stringify({
-                error: 'Cards scenario requires: draw, condition',
-              }),
-              {
-                status: 400,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders },
-              }
-            );
-          }
           result = runCardsSimulation(
             {
               draw: params.draw,
@@ -113,17 +235,6 @@ async function handleRun(request: Request): Promise<Response> {
           break;
 
         case 'binomial':
-          if (params.n === undefined || params.p === undefined || !params.condition) {
-            return new Response(
-              JSON.stringify({
-                error: 'Binomial scenario requires: n, p, condition',
-              }),
-              {
-                status: 400,
-                headers: { 'Content-Type': 'application/json', ...corsHeaders },
-              }
-            );
-          }
           result = runBinomialSimulation(
             {
               n: params.n,

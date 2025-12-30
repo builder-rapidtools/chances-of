@@ -46,6 +46,10 @@ function App() {
     };
     setRequestPayload(payload);
 
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     try {
       // Use env var for API base URL, default to same-origin
       const apiBase = import.meta.env.VITE_API_BASE_URL || '';
@@ -55,7 +59,10 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -78,7 +85,12 @@ function App() {
       };
       setHistory((prev) => [historyEntry, ...prev].slice(0, 5));
     } catch (err: any) {
-      setError(err.message || 'Failed to run simulation');
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        setError('Request timed out after 30 seconds. Try reducing the number of trials or using exact mode.');
+      } else {
+        setError(err.message || 'Failed to run simulation');
+      }
     } finally {
       setLoading(false);
     }

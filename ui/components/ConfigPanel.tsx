@@ -354,8 +354,14 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                     id="dice"
                     type="number"
                     value={dice}
-                    onChange={(e) => setDice(Number(e.target.value))}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val) && isFinite(val) && val >= 1 && val <= 100) {
+                        setDice(val);
+                      }
+                    }}
                     min="1"
+                    max="100"
                   />
                 </div>
                 <div className="space-y-2">
@@ -364,8 +370,14 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                     id="sides"
                     type="number"
                     value={sides}
-                    onChange={(e) => setSides(Number(e.target.value))}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val) && isFinite(val) && val >= 2 && val <= 10000) {
+                        setSides(val);
+                      }
+                    }}
                     min="2"
+                    max="10000"
                   />
                 </div>
               </div>
@@ -390,7 +402,12 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                   id="draw"
                   type="number"
                   value={draw}
-                  onChange={(e) => setDraw(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (!isNaN(val) && isFinite(val) && val >= 1 && val <= 52) {
+                      setDraw(val);
+                    }
+                  }}
                   min="1"
                   max="52"
                 />
@@ -417,8 +434,14 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                     id="n"
                     type="number"
                     value={n}
-                    onChange={(e) => setN(Number(e.target.value))}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val) && isFinite(val) && val >= 1 && val <= 10000) {
+                        setN(val);
+                      }
+                    }}
                     min="1"
+                    max="10000"
                   />
                 </div>
                 <div className="space-y-2">
@@ -427,8 +450,13 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                     id="p"
                     type="number"
                     value={p}
-                    onChange={(e) => setP(Number(e.target.value))}
-                    min="0"
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (!isNaN(val) && isFinite(val) && val > 0 && val <= 1) {
+                        setP(val);
+                      }
+                    }}
+                    min="0.001"
                     max="1"
                     step="0.01"
                   />
@@ -494,7 +522,12 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                       id="seed"
                       type="number"
                       value={seed}
-                      onChange={(e) => setSeed(Number(e.target.value))}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && isFinite(val)) {
+                          setSeed(val);
+                        }
+                      }}
                     />
                   </div>
 
@@ -514,9 +547,12 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                           id="targetCIWidth"
                           type="number"
                           value={targetCIWidth}
-                          onChange={(e) =>
-                            setTargetCIWidth(Number(e.target.value))
-                          }
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && isFinite(val) && val > 0 && val <= 1) {
+                              setTargetCIWidth(val);
+                            }
+                          }}
                           min="0.001"
                           max="1"
                           step="0.001"
@@ -528,7 +564,14 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                           id="maxTrials"
                           type="number"
                           value={maxTrials}
-                          onChange={(e) => setMaxTrials(Number(e.target.value))}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            if (!isNaN(val) && isFinite(val) && val >= 1 && val <= 1000000) {
+                              setMaxTrials(val);
+                            }
+                          }}
+                          min="1"
+                          max="1000000"
                           step="1000"
                         />
                       </div>
@@ -538,7 +581,13 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                           id="batchSize"
                           type="number"
                           value={batchSize}
-                          onChange={(e) => setBatchSize(Number(e.target.value))}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            if (!isNaN(val) && isFinite(val) && val >= 1) {
+                              setBatchSize(val);
+                            }
+                          }}
+                          min="1"
                           step="1000"
                         />
                       </div>
@@ -550,8 +599,14 @@ const ConfigPanel = forwardRef<ConfigPanelRef, ConfigPanelProps>(({ onRun, loadi
                         id="trials"
                         type="number"
                         value={trials}
-                        onChange={(e) => setTrials(Number(e.target.value))}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value, 10);
+                          if (!isNaN(val) && isFinite(val) && val >= 1000 && val <= 1000000) {
+                            setTrials(val);
+                          }
+                        }}
                         min="1000"
+                        max="1000000"
                         step="1000"
                       />
                     </div>

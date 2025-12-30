@@ -23,20 +23,56 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
     const sides = diceMatch[2] ? parseInt(diceMatch[2]) : (diceMatch[3] ? parseInt(diceMatch[3]) : 6);
 
     // Validate extracted params
-    if (!dice || dice < 1 || dice > 100 || !sides || sides < 2 || sides > 100) {
-      // Invalid params, fail parsing
+    if (!dice || dice < 1) {
       return {
         scenario: null,
         params: {},
         options: {},
-        interpretation: "I couldn't confidently interpret that input. I currently understand dice, cards, and repeated-trial scenarios.",
+        interpretation: "Number of dice must be at least 1.",
         confidence: 'low',
         examples: [
           'roll 2d6, sum at least 7',
-          'draw 5 cards, get 2 aces',
-          '12 trials at 5% chance, at least 1 success',
+          'roll 1 die with 20 sides, max at least 18',
         ],
-        transformHint: '"12 eggs, chance an egg breaks" → binomial (n=12, success ≥ 1)',
+      };
+    }
+    if (dice > 100) {
+      return {
+        scenario: null,
+        params: {},
+        options: {},
+        interpretation: `Number of dice must not exceed 100 (you requested ${dice}).`,
+        confidence: 'low',
+        examples: [
+          'roll 10d6, sum at least 35',
+          'roll 50 dice with 6 sides, sum at least 175',
+        ],
+      };
+    }
+    if (!sides || sides < 2) {
+      return {
+        scenario: null,
+        params: {},
+        options: {},
+        interpretation: "Number of sides must be at least 2.",
+        confidence: 'low',
+        examples: [
+          'roll 2d6, sum at least 7',
+          'roll 3 dice with 10 sides, sum at least 20',
+        ],
+      };
+    }
+    if (sides > 10000) {
+      return {
+        scenario: null,
+        params: {},
+        options: {},
+        interpretation: `Number of sides must not exceed 10000 (you requested ${sides}).`,
+        confidence: 'low',
+        examples: [
+          'roll 2d1000, sum at least 1500',
+          'roll 1 die with 1000 sides, max at least 900',
+        ],
       };
     }
 
@@ -50,19 +86,74 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
 
     if (sumMatch) {
       const target = parseInt(sumMatch[1]);
+      const maxPossible = dice * sides;
+      const minPossible = dice;
+
       if (lower.includes('exactly') || lower.includes('equal')) {
         condition = `sum==${target}`;
         conditionDesc = `sum equals exactly ${target}`;
+        if (target > maxPossible || target < minPossible) {
+          return {
+            scenario: null,
+            params: {},
+            options: {},
+            interpretation: `Sum cannot equal ${target} with ${dice} ${dice === 1 ? 'die' : 'dice'} of ${sides} sides (range: ${minPossible}-${maxPossible}).`,
+            confidence: 'low',
+            examples: [
+              `roll ${dice}d${sides}, sum exactly ${Math.floor((minPossible + maxPossible) / 2)}`,
+              `roll ${dice}d${sides}, sum at least ${Math.ceil(maxPossible * 0.6)}`,
+            ],
+          };
+        }
       } else {
         condition = `sum>=${target}`;
         conditionDesc = `sum is ${target} or higher`;
+        if (target > maxPossible) {
+          return {
+            scenario: null,
+            params: {},
+            options: {},
+            interpretation: `Sum cannot exceed ${maxPossible} with ${dice} ${dice === 1 ? 'die' : 'dice'} of ${sides} sides (you requested at least ${target}).`,
+            confidence: 'low',
+            examples: [
+              `roll ${dice}d${sides}, sum at least ${Math.ceil(maxPossible * 0.6)}`,
+              `roll ${dice}d${sides}, sum at least ${Math.ceil(maxPossible * 0.8)}`,
+            ],
+          };
+        }
       }
     } else if (maxMatch) {
       const target = parseInt(maxMatch[1]);
+      if (target > sides) {
+        return {
+          scenario: null,
+          params: {},
+          options: {},
+          interpretation: `Maximum die value cannot exceed ${sides} with ${sides}-sided ${dice === 1 ? 'die' : 'dice'} (you requested at least ${target}).`,
+          confidence: 'low',
+          examples: [
+            `roll ${dice}d${sides}, max at least ${Math.ceil(sides * 0.8)}`,
+            `roll ${dice}d${sides}, max at least ${sides}`,
+          ],
+        };
+      }
       condition = `max>=${target}`;
       conditionDesc = `at least one die shows ${target} or higher`;
     } else if (minMatch) {
       const target = parseInt(minMatch[1]);
+      if (target > sides) {
+        return {
+          scenario: null,
+          params: {},
+          options: {},
+          interpretation: `Minimum die value cannot exceed ${sides} with ${sides}-sided ${dice === 1 ? 'die' : 'dice'} (you requested at least ${target}).`,
+          confidence: 'low',
+          examples: [
+            `roll ${dice}d${sides}, min at least ${Math.ceil(sides * 0.5)}`,
+            `roll ${dice}d${sides}, min at least ${sides}`,
+          ],
+        };
+      }
       condition = `min>=${target}`;
       conditionDesc = `all dice show ${target} or higher`;
     }
@@ -84,19 +175,30 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
     const draw = parseInt(cardCountMatch[1]);
 
     // Validate extracted params
-    if (!draw || draw < 1 || draw > 52) {
+    if (!draw || draw < 1) {
       return {
         scenario: null,
         params: {},
         options: {},
-        interpretation: "I couldn't confidently interpret that input. I currently understand dice, cards, and repeated-trial scenarios.",
+        interpretation: "Number of cards to draw must be at least 1.",
         confidence: 'low',
         examples: [
-          'roll 2d6, sum at least 7',
           'draw 5 cards, get 2 aces',
-          '12 trials at 5% chance, at least 1 success',
+          'draw 7 cards, get 3 hearts',
         ],
-        transformHint: '"12 eggs, chance an egg breaks" → binomial (n=12, success ≥ 1)',
+      };
+    }
+    if (draw > 52) {
+      return {
+        scenario: null,
+        params: {},
+        options: {},
+        interpretation: `Cannot draw more than 52 cards from a standard deck (you requested ${draw}).`,
+        confidence: 'low',
+        examples: [
+          'draw 5 cards, get 2 aces',
+          'draw 10 cards, get 3 hearts',
+        ],
       };
     }
 
@@ -110,10 +212,62 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
 
     if (acesMatch) {
       const count = parseInt(acesMatch[1]);
+      if (count > 4) {
+        return {
+          scenario: null,
+          params: {},
+          options: {},
+          interpretation: `Cannot get more than 4 aces from a standard deck (you requested ${count}).`,
+          confidence: 'low',
+          examples: [
+            `draw ${draw} cards, get 2 aces`,
+            `draw ${draw} cards, get ${Math.min(draw, 4)} aces`,
+          ],
+        };
+      }
+      if (count > draw) {
+        return {
+          scenario: null,
+          params: {},
+          options: {},
+          interpretation: `Cannot draw ${count} aces from only ${draw} ${draw === 1 ? 'card' : 'cards'}.`,
+          confidence: 'low',
+          examples: [
+            `draw ${count} cards, get ${count} aces`,
+            `draw ${Math.max(draw, count)} cards, get ${Math.min(draw, count)} aces`,
+          ],
+        };
+      }
       condition = `aces>=${count}`;
       conditionDesc = `${count} or more ${count === 1 ? 'ace' : 'aces'}`;
     } else if (heartsMatch) {
       const count = parseInt(heartsMatch[1]);
+      if (count > 13) {
+        return {
+          scenario: null,
+          params: {},
+          options: {},
+          interpretation: `Cannot get more than 13 hearts from a standard deck (you requested ${count}).`,
+          confidence: 'low',
+          examples: [
+            `draw ${draw} cards, get 3 hearts`,
+            `draw ${draw} cards, get ${Math.min(draw, 13)} hearts`,
+          ],
+        };
+      }
+      if (count > draw) {
+        return {
+          scenario: null,
+          params: {},
+          options: {},
+          interpretation: `Cannot draw ${count} hearts from only ${draw} ${draw === 1 ? 'card' : 'cards'}.`,
+          confidence: 'low',
+          examples: [
+            `draw ${count} cards, get ${count} hearts`,
+            `draw ${Math.max(draw, count)} cards, get ${Math.min(draw, count)} hearts`,
+          ],
+        };
+      }
       condition = `hearts>=${count}`;
       conditionDesc = `${count} or more ${count === 1 ? 'heart' : 'hearts'}`;
     } else if (rankMatch) {
@@ -148,23 +302,48 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
       p = parseFloat(probMatch[1]) / 100;
     } else if (probFracMatch && !probMatch) {
       const val = parseFloat(probFracMatch[1]);
-      p = val > 1 ? val / 100 : val;
+      // Fix ambiguity: treat 1 as 1% not 100%
+      p = val >= 1 ? val / 100 : val;
     }
 
     // Validate extracted params
-    if (!n || n < 1 || n > 1000000 || p <= 0 || p > 1) {
+    if (!n || n < 1) {
       return {
         scenario: null,
         params: {},
         options: {},
-        interpretation: "I couldn't confidently interpret that input. I currently understand dice, cards, and repeated-trial scenarios.",
+        interpretation: "Number of trials must be at least 1.",
         confidence: 'low',
         examples: [
-          'roll 2d6, sum at least 7',
-          'draw 5 cards, get 2 aces',
           '12 trials at 5% chance, at least 1 success',
+          '20 flips, at least 10 successes',
         ],
-        transformHint: '"12 eggs, chance an egg breaks" → binomial (n=12, success ≥ 1)',
+      };
+    }
+    if (n > 10000) {
+      return {
+        scenario: null,
+        params: {},
+        options: {},
+        interpretation: `Number of trials must not exceed 10000 (you requested ${n}).`,
+        confidence: 'low',
+        examples: [
+          '1000 trials at 5% chance, at least 30 successes',
+          '10000 trials at 1% chance, at least 50 successes',
+        ],
+      };
+    }
+    if (p <= 0 || p > 1) {
+      return {
+        scenario: null,
+        params: {},
+        options: {},
+        interpretation: "Probability must be between 0 (exclusive) and 1 (inclusive). Use percentages like '5% chance' or decimals like '0.05 chance'.",
+        confidence: 'low',
+        examples: [
+          `${n} trials at 5% chance, at least 1 success`,
+          `${n} trials at 0.5 chance, at least ${Math.ceil(n * 0.25)} successes`,
+        ],
       };
     }
 
@@ -176,10 +355,36 @@ export function parseNaturalLanguage(input: string): ParsedScenario {
 
     if (exactMatch) {
       const count = parseInt(exactMatch[1]);
+      if (count > n) {
+        return {
+          scenario: null,
+          params: {},
+          options: {},
+          interpretation: `Cannot get ${count} successes from only ${n} ${n === 1 ? 'trial' : 'trials'}.`,
+          confidence: 'low',
+          examples: [
+            `${count} trials at ${(p * 100).toFixed(1)}% chance, exactly ${count} successes`,
+            `${n} trials at ${(p * 100).toFixed(1)}% chance, exactly ${Math.min(n, count)} successes`,
+          ],
+        };
+      }
       condition = `successes==${count}`;
       conditionDesc = `exactly ${count} ${count === 1 ? 'success' : 'successes'}`;
     } else if (successMatch) {
       const count = parseInt(successMatch[1]);
+      if (count > n) {
+        return {
+          scenario: null,
+          params: {},
+          options: {},
+          interpretation: `Cannot get ${count} or more successes from only ${n} ${n === 1 ? 'trial' : 'trials'}.`,
+          confidence: 'low',
+          examples: [
+            `${count} trials at ${(p * 100).toFixed(1)}% chance, at least ${count} successes`,
+            `${n} trials at ${(p * 100).toFixed(1)}% chance, at least ${Math.min(n, count)} successes`,
+          ],
+        };
+      }
       condition = `successes>=${count}`;
       conditionDesc = `${count} or more ${count === 1 ? 'success' : 'successes'}`;
     }
