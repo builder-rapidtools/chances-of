@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from './ui/popover';
 
-export function HowToUseGuide() {
+function HowToUseGuide() {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -213,3 +213,5 @@ export function HowToUseGuide() {
     </Dialog>
   );
 }
+
+export default HowToUseGuide;
